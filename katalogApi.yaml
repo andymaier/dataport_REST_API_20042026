@@ -1,23 +1,30 @@
 openapi: '3.0.3'
 info:
   title: KatalogAPI
-  version: '1.0'  
+  version: '1.0'
 servers:
   - url: https://localhost:50001/
 tags:
   - name: Shop
+security:
+  - bearerAuth: []
 paths:
   /test:
     get:
+      security: []
       responses:
         '200':
           description: OK
   /artikel:
     get:
+      operationId: getArtikel
       tags:
         - Shop
       summary: Gebe alle Artikel zurück
       description: Liefert alle Artikel zurück
+      security:
+        - bearerAuth: []
+        - oauth2: [artikel:read]
       responses:
         '200':
           description: Ok
@@ -27,35 +34,76 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Artikel'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
     post:
+      operationId: createArtikel
+      tags:
+        - Shop
+      summary: Erstelle einen Artikel
+      description: |
+        Ein *Artikel* wird erstellt. Erfordert die Rolle `admin`
+        bzw. den Scope `artikel:write`.
+      security:
+        - bearerAuth: []
+        - oauth2: [artikel:write]
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/Artikel'
-      tags:
-        - Shop
-      summary: Erstelle einen Artikel
-      description: | 
-        Ein *Artikel* wird erstellt
-        | Tables        | Are           | Cool  |
-        | ------------- |:-------------:| -----:|
-        | col 3 is      | right-aligned | $1600 |
-        | col 2 is      | centered      |   $12 |
-        | zebra stripes | are neat      |    $1 |
-
-        Inline-style: 
-        ![alt text](https://d2ms8rpfqc4h24.cloudfront.net/what_factors_to_consider_while_working_with_rest_apis_3e9ffb67d4.jpg "Logo Title Text 1")        
-
       responses:
         '201':
           description: Created
           content:
             application/json:
-              schema:                                
+              schema:
                 $ref: '#/components/schemas/Artikel'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT-Bearer-Token. Die im Token enthaltenen Scopes/Rollen steuern
+        den Zugriff:
+          * `artikel:read`  — Leserechte auf Artikel (Rollen: `user`, `admin`)
+          * `artikel:write` — Schreibrechte auf Artikel (Rolle: `admin`)
+    oauth2:
+      type: oauth2
+      description: OAuth2 Authorization Code Flow mit Scopes als Rechte.
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/oauth2/authorize
+          tokenUrl: https://auth.example.com/oauth2/token
+          refreshUrl: https://auth.example.com/oauth2/refresh
+          scopes:
+            artikel:read: Artikel lesen
+            artikel:write: Artikel anlegen, ändern, löschen
+
+  responses:
+    Unauthorized:
+      description: Kein oder ungültiges Access-Token
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: Token gültig, aber fehlende Rolle/Scope
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+
   schemas:
     Artikel:
       type: object
@@ -77,3 +125,20 @@ components:
       required:
         - name
         - preis
+    Problem:
+      type: object
+      description: Fehlerobjekt nach RFC 7807
+      properties:
+        type:
+          type: string
+          format: uri
+          example: https://example.com/errors/forbidden
+        title:
+          type: string
+          example: Forbidden
+        status:
+          type: integer
+          example: 403
+        detail:
+          type: string
+          example: Fehlender Scope 'artikel:write'.
