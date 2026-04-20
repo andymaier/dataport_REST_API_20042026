@@ -1,0 +1,79 @@
+openapi: '3.0.3'
+info:
+  title: KatalogAPI
+  version: '1.0'  
+servers:
+  - url: https://localhost:50001/
+tags:
+  - name: Shop
+paths:
+  /test:
+    get:
+      responses:
+        '200':
+          description: OK
+  /artikel:
+    get:
+      tags:
+        - Shop
+      summary: Gebe alle Artikel zurück
+      description: Liefert alle Artikel zurück
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Artikel'
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Artikel'
+      tags:
+        - Shop
+      summary: Erstelle einen Artikel
+      description: | 
+        Ein *Artikel* wird erstellt
+        | Tables        | Are           | Cool  |
+        | ------------- |:-------------:| -----:|
+        | col 3 is      | right-aligned | $1600 |
+        | col 2 is      | centered      |   $12 |
+        | zebra stripes | are neat      |    $1 |
+
+        Inline-style: 
+        ![alt text](https://d2ms8rpfqc4h24.cloudfront.net/what_factors_to_consider_while_working_with_rest_apis_3e9ffb67d4.jpg "Logo Title Text 1")        
+
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:                                
+                $ref: '#/components/schemas/Artikel'
+
+components:
+  schemas:
+    Artikel:
+      type: object
+      properties:
+        id:
+          type: string
+          maxLength: 36
+          format: uuid
+        name:
+          type: string
+          maxLength: 40
+          example: Kirsche
+          description: Name des Artikels
+        preis:
+          type: number
+          minimum: 0
+          example: 3.99
+          description: Preis des Artikels
+      required:
+        - name
+        - preis

@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: KatalogAPI
+  version: "1.0"
+servers:
+- url: https://localhost:50001/
+tags:
+- name: Shop
+paths:
+  /test:
+    get:
+      responses:
+        "200":
+          description: OK
+  /artikel:
+    get:
+      description: Liefert alle Artikel zurück
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Artikel"
+                type: array
+          description: Ok
+      summary: Gebe alle Artikel zurück
+      tags:
+      - Shop
+    post:
+      description: "Ein *Artikel* wird erstellt\n| Tables        | Are           |\
+        \ Cool  |\n| ------------- |:-------------:| -----:|\n| col 3 is      | right-aligned\
+        \ | $1600 |\n| col 2 is      | centered      |   $12 |\n| zebra stripes |\
+        \ are neat      |    $1 |\n\nInline-style: \n![alt text](https://d2ms8rpfqc4h24.cloudfront.net/what_factors_to_consider_while_working_with_rest_apis_3e9ffb67d4.jpg\
+        \ \"Logo Title Text 1\")        \n"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Artikel"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Artikel"
+          description: Created
+      summary: Erstelle einen Artikel
+      tags:
+      - Shop
+components:
+  schemas:
+    Artikel:
+      example:
+        preis: 3.99
+        name: Kirsche
+        id: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+      properties:
+        id:
+          format: uuid
+          maxLength: 36
+          title: id
+          type: string
+        name:
+          description: Name des Artikels
+          example: Kirsche
+          maxLength: 40
+          title: name
+          type: string
+        preis:
+          description: Preis des Artikels
+          example: 3.99
+          minimum: 0
+          title: preis
+          type: number
+      required:
+      - name
+      - preis
+      title: Artikel
+      type: object
